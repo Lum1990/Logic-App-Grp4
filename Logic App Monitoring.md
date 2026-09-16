@@ -27,16 +27,19 @@ Andra delen bearbetar informationen, sätter variabler och skickar informationen
 <img width="1311" height="1055" alt="image" src="https://github.com/user-attachments/assets/6e4fc9d2-8547-46ee-b0e2-97545c1da6de" />
 </details>
 
-## Hur appen fungerar
+## Hur appen fungerar, första blocket
 Appen använder en Recurrence som trigger, den upprepas var 15´e minut och inställd på UTC+01:00<br>
 Det första som händer efter att triggern startar en ny körning är **Compose** som vi har bytt till namnet **StartTime**.<br>
-StartTime kör uttrycket **utcNow()** och sparar resultatet som sin output. Nästa del i kedjan är **HTTP** denna har inte fått ett eget namne, HTTP har som uppgift att anropa sidan: https://faultnode.se/ vi gör det med metoden **GET**. <br>
-Den skickar helt enkelt en http-förfrågan och sidans server svarar med en http-statuskod till exempel 200, 500 eller 503. Nästa del i kedjan kommer inte köra innan HTTP har fått ett svar från serven. Tack vare detta kan vi räkna ut hur lång svarstid
+StartTime kör uttrycket **utcNow()** och sparar resultatet som sin output. Nästa del i kedjan är **HTTP** denna har inte fått ett eget namn, HTTP har som uppgift att anropa sidan: https://faultnode.se/ vi gör det med metoden **GET**. <br>
+Den skickar helt enkelt en HTTP-förfrågan och sidans server svarar med bland annat en HTTP-statuskod till exempel 200, 500 eller 503. HTTP-steget sparar svaret sedan som sin output. Nästa del i kedjan kommer inte köra innan HTTP har fått ett svar från serven. Tack vare detta kan vi räkna ut hur lång svarstid
 serven har men yttligare en **Compose** som vi döper till **EndTime**. EndTime använder också uttrycket utcNow() och gör det direkt efter HTTP är klar. Här kan det uppstå problem om HTTP inte körs klart och får ett **Has failed** eller **Has timed out**,
-det kan vi åtgärda i settings i EndTime och låta den köra även om HTTP får något av dessa fel. <img width="472" height="379" alt="image" src="https://github.com/user-attachments/assets/950ffffb-b26a-4493-8753-e5867165dd59" />
+det kan vi åtgärda i settings i EndTime och låta den köra även om<br>
+HTTP får något av dessa fel.<br> 
 
-För att räkna ut hur lång tid anropet tog använder vi ticks(), det gör om StartTime och EndTime till heltal som vi kan subtrahera med varandra och sedan dividera med 10 000 för att räkna ut antalet millisekunder anropet tog.<br>
-Detta gör vi en ny **Compose** som heter **Response Time**.
+<img width="472" height="379" alt="image" src="https://github.com/user-attachments/assets/950ffffb-b26a-4493-8753-e5867165dd59" />
+
+För att räkna ut hur lång tid anropet tog använder vi ticks(), det gör om StartTime och EndTime till heltal som vi kan subtrahera StartTime från EndTime och sedan dividera med 10 000 för att räkna ut antalet millisekunder anropet tog.<br>
+Detta gör vi i en ny **Compose** som får namnet **Response Time**.
 ````
 div(
   sub(
@@ -46,6 +49,13 @@ div(
   10000
 )
 ````
+
+Det sista som sker i detta block, se bild 1, är en sista **Compose**, **HTTPStatus** som hämtar **statusCode** från HTTP-steget och sparar det som sin egen output. <br>
+Vi skapar även en **Initialize variables**, som inte heller fått ett eget namn, där skapar vi variabeln **WebsiteStatus** som är av typen String, just nu är den tom, vi ger den ett värde i nästa steg.
+
+## Andra blocket
+
+
 
 
 
