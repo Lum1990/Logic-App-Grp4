@@ -38,7 +38,7 @@ det kan vi åtgärda i settings i **EndTime** och låta den köra även om HTTP 
 <img width="472" height="379" alt="image" src="https://github.com/user-attachments/assets/950ffffb-b26a-4493-8753-e5867165dd59" />
 
 För att räkna ut hur lång tid anropet tog använder vi **ticks()**, det gör om **StartTime** och **EndTime** till heltal och vi kan subtrahera **StartTime** från **EndTime** och sedan dividera med 10 000 för att räkna ut antalet millisekunder anropet tog.<br>
-Detta gör vi i en ny **Compose** som får namnet **Response Time**.
+Detta gör vi i en ny **Compose** som får namnet **Response Time** här använder vi **div()**.
 ````
 div(
   sub(
