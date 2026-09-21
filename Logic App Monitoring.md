@@ -33,7 +33,7 @@ Det första som händer efter att triggern startar en ny körning är **Compose*
 **StartTime** kör uttrycket **utcNow()** och sparar resultatet som sin output. Nästa del i kedjan är **HTTP** denna har inte fått ett eget namn, HTTP har som uppgift att anropa sidan: https://faultnode.se/ vi gör det med metoden **GET**. <br>
 Den skickar helt enkelt en HTTP-förfrågan och sidans server svarar med bland annat en HTTP-statuskod till exempel 200, 500 eller 503. **HTTP** sparar svaret sedan som sin output. Nästa del i kedjan kommer inte köra innan **HTTP** har fått ett svar från serven. Tack vare detta kan vi räkna ut hur lång svarstid
 serven har men yttligare en **Compose** som vi döper till **EndTime**. EndTime använder också uttrycket **utcNow()** och gör det direkt efter **HTTP** är klar. Här kan det uppstå problem om **HTTP** inte körs klart och får ett **Has failed** eller **Has timed out**,
-det kan vi åtgärda i settings i **EndTime** och låta den köra även om HTTP får något av dessa fel.<br> 
+det kan vi åtgärda i settings i **EndTime** och låta **EndTime** köra även om **HTTP** får något av dessa fel.<br> 
 
 <img width="472" height="379" alt="image" src="https://github.com/user-attachments/assets/950ffffb-b26a-4493-8753-e5867165dd59" />
 
@@ -57,8 +57,8 @@ Andra blocket börjar med ett **Condition** som heter **IfStatusCode500or503** d
 <img width="500" height="380" alt="image" src="https://github.com/user-attachments/assets/a93effca-b5b5-4ba1-a83b-4571b39e9516" /> <br>
 Här måste vi använd **Condition expression** "or" efter som att det är två olika värden vi vill kontrolera.
 
-Om **HTTPStatus** är 500 eller 503 är resultatet **True** och sätter vår variabel WebsiteStatus till **DOWN**. Om **HTTPStatus** är **UP** betyder det att vårt resultat är **False** och vi kommer gå vidare till vårt andra condition i detta block. <br>
-I **IfSlowerThan3000MS** kontrolerar vi om output från **Response Time** är längre än 3000MS är den det får vi **True** och vi sätter våran variabel till **SLOW**, är **Response Time** inte längre än 3000MS sätter vi vår variabel till **UP** <br>
+Om **HTTPStatus** är 500 eller 503 är resultatet **True** och sätter vår variabel **WebsiteStatus** till **DOWN**. Om **HTTPStatus** är **UP** betyder det att vårt resultat är **False** och vi kommer gå vidare till vårt andra condition i detta block. <br>
+I **IfSlowerThan3000MS** kontrolerar vi om output från **Response Time** är längre än 3000MS är den det får vi **True** och vi sätter våran variabel **WebsiteStatus** till **SLOW**, är **Response Time** inte längre än 3000MS sätter vi vår variabel **WebsiteStatus** till **UP** <br>
 Ett av dessa värden kommer vi senare skicka till en SharePoint List beroende på vilket resultat vi får.
 
 
