@@ -1,4 +1,4 @@
-# Grupp 4 Logic app övervakning av hemsida
+# Grupp 4 Logic App övervakning av hemsida
 
 ### Vad appen ska göra
 Vi har fått i uppgift att välja ett projekt som vi ska göra i grupp. Vi har valt att övervaka en hemsida men hjälpa av Logic App i Microsoft Azure som analyserar bland annat svarstid, om sidan är tillgänglig eller inte m.m.<br>
@@ -53,13 +53,19 @@ Det sista som sker i detta block, se bild 1, är en sista **Compose**, **HTTPSta
 Vi skapar även en **Initialize variables**, som inte heller fått ett eget namn, där skapar vi variabeln **WebsiteStatus** som är av typen String, just nu är den tom, vi ger den ett värde i nästa steg.
 
 ## Andra blocket
-Andra blocket börjar med ett **Condition** som heter **IfStatusCode500or503** det kollar helt enkelt om outputen från HTTPStatus är 500/503 eller om den inte är det.<br> 
+Andra blocket börjar med ett **Condition** som heter **IfStatusCode500or503** det kollar helt enkelt om outputen från HTTPStatus är 500/503 eller om den inte är det, se bild 2.<br> 
 <img width="500" height="380" alt="image" src="https://github.com/user-attachments/assets/a93effca-b5b5-4ba1-a83b-4571b39e9516" /> <br>
 Här måste vi använd **Condition expression** "or" efter som att det är två olika värden vi vill kontrolera.
 
 Om **HTTPStatus** är 500 eller 503 är resultatet **True** och sätter vår variabel **WebsiteStatus** till **DOWN**. Om **HTTPStatus** är **UP** betyder det att vårt resultat är **False** och vi kommer gå vidare till vårt andra condition i detta block. <br>
-I **IfSlowerThan3000MS** kontrolerar vi om output från **Response Time** är längre än 3000MS är den det får vi **True** och vi sätter våran variabel **WebsiteStatus** till **SLOW**, är **Response Time** inte längre än 3000MS sätter vi vår variabel **WebsiteStatus** till **UP** <br>
-Ett av dessa värden kommer vi senare skicka till en SharePoint List beroende på vilket resultat vi får.
+I **IfSlowerThan3000MS** kontrolerar vi om output från **Response Time** är längre än 3000MS är den det får vi **True** och vi sätter våran variabel **WebsiteStatus** till **SLOW**, är **Response Time** inte längre än 3000MS sätter vi vår variabel **WebsiteStatus** till **UP**. <br>
+Ett av dessa värden kommer vi senare skicka till en SharePoint List beroende på vilket resultat vi får. <br>
+
+Det sista vi har i andra blocket är en **Get item** detta är en Sharepoint-action som hämtar en specifik rad från en sharepoint list, vår **Get item** har vi döpt till **GetMonitorState**. Vi behöver information från denna lista eftersom varje gång **Recurrence** körs, vår triggger, börjar hela vår Logic App om från
+noll. Ta vår Compose **StartTime** från första blocket som exempel, där har vi valt Inputs som **utcNow()** alltså vad tiden är precis när **StartTime** körs, denna input sparas igenom hela körningen av vår Logic App, men så fort **Recurrence** körs igenom och vår app startas på nytt har dessa värden försvunnit och
+**StarTime** kommer ta ett nytt input värde från **utcNow()**. Därför har vi gjort Sharepoint site **MonitorState**, den har bara 4 kolumner, **Website**, **FirstFailureTime** **AlertActive** och **ID**. Här kommer värdena som vi behöver finnas kvar även när vår Logic App kör **Recurrence**.
+
+## Tredje blocket
 
 
 
