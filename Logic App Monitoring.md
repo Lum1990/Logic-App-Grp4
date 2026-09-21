@@ -66,6 +66,8 @@ noll. Ta vår Compose **StartTime** från första blocket som exempel, där har 
 **StarTime** kommer ta ett nytt input värde från **utcNow()**. Därför har vi gjort Sharepoint site **MonitorState**, den har bara 4 kolumner, **Website**, **FirstFailureTime** **AlertActive** och **ID**. Här kommer värdena som vi behöver finnas kvar även när vår Logic App kör **Recurrence**.
 
 ## Tredje blocket
+Det första vi har i block tre är ett **Condition** denna är döpt **IsWebSiteDown** den kollar om **WebSiteStatus** = **DOWN**. **IsWebSiteDown** leder till yttligare till två **Conditions**, **IsFirstFailureTimeEmty** och **WasAlertActive**, se bild 3. <br>
+
 
 
 
