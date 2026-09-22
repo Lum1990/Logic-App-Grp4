@@ -6,7 +6,7 @@ Vi har gjort en enkel app som läser av sidan Faultnode.se var 15 minut. Faultno
 Den information som appen fångar upp från Faultnode.se kommer sedan att visas i en SharePoint Site.
 
 ## Appens uppbyggnad
-Vår app är uppbyggd i två huvuddela.<br>
+Vår app är uppbyggd i tre delar.<br>
 *Del 1* <br>
 Första delen övervakar den valda hemsaidan och lagrar information.<br>
 <details>
@@ -16,12 +16,13 @@ Första delen övervakar den valda hemsaidan och lagrar information.<br>
 
 
 *Del 2* <br>
-Andra delen bearbetar informationen, sätter variabler och skickar informationen till SharePoint.<br>
+Andra delen bearbetar informationen, sätter **WebsiteStatus** till ett av tre värden beroende på status på hemsidan som övervakas.<br>
 <details>
  <summary>Bild 2 </summary>
 <img width="1221" height="930" alt="image" src="https://github.com/user-attachments/assets/63401a56-53d5-4da0-a07e-4236381425de" /> <br>
 </details>
-  
+
+  Tredje delen använder variabeln **WebsiteStatus** för att bestämma hur **MonitorState** ska uppdateras.
   <details>
  <summary>Bild 3 </summary>
 <img width="1311" height="1055" alt="image" src="https://github.com/user-attachments/assets/6e4fc9d2-8547-46ee-b0e2-97545c1da6de" />
@@ -63,10 +64,25 @@ Ett av dessa värden kommer vi senare skicka till en SharePoint List beroende p�
 
 Det sista vi har i andra blocket är en **Get item** detta är en Sharepoint-action som hämtar en specifik rad från en sharepoint list, vår **Get item** har vi döpt till **GetMonitorState**. Vi behöver information från denna lista eftersom varje gång **Recurrence** körs, vår triggger, börjar hela vår Logic App om från
 noll. Ta vår Compose **StartTime** från första blocket som exempel, där har vi valt Inputs som **utcNow()** alltså vad tiden är precis när **StartTime** körs, denna input sparas igenom hela körningen av vår Logic App, men så fort **Recurrence** körs igenom och vår app startas på nytt har dessa värden försvunnit och
-**StarTime** kommer ta ett nytt input värde från **utcNow()**. Därför har vi gjort Sharepoint site **MonitorState**, den har bara 4 kolumner, **Website**, **FirstFailureTime** **AlertActive** och **ID**. Här kommer värdena som vi behöver finnas kvar även när vår Logic App kör **Recurrence**.
+**StarTime** kommer ta ett nytt input värde från **utcNow()**. Därför har vi gjort Sharepoint site **MonitorState**, den har bara 4 kolumner, **Website**, **FirstFailureTime** **AlertActive** och **ID**. Här kommer värdena som vi behöver finnas kvar även när vår Logic App kör **Recurrence**. Denna information kommer vi behöva i block tre.
 
 ## Tredje blocket
 Det första vi har i block tre är ett **Condition** denna är döpt **IsWebSiteDown** den kollar om **WebSiteStatus** = **DOWN**. **IsWebSiteDown** leder till yttligare till två **Conditions**, **IsFirstFailureTimeEmty** och **WasAlertActive**, se bild 3. <br>
+Vi säger att vi börjar från ett stadie där Faultnode.se fungerar som det ska, sidan ligger inte nere. **MonitorSate** kommer då se ut så här: <br>
+<img width="954" height="191" alt="image" src="https://github.com/user-attachments/assets/d3e375e0-eb8a-4e16-b1ec-6640b99f6d67" /> <br>
+
+Men plötsligt svarar inte Faultnode.se, efter ca 15 min körs **Recurrence** igen och Logic App startar om. Denna gång kommer **WebsiteStatus** att sättas till **DOWN** och **IsWebSiteDown** i tredje blocket kollar: är **WebsiteStatus** = **DOWN**. I detta fall blir det **True**. <br>
+Logic App går då vidare till **True** där har vi placerat yttligare ett **Contidion**: **IsFirstFailureTimeEmpty**.<br> 
+**IsFirstFailureTimeEmpty** kontrolerar om värdet **FirstFailureTime** i våran lista, se bild MonitorState, är tom. I vårt fall är den tom och resultatet blir **True**. Logic app går vidare till **True** och kör en Sharepoint-action **Update Item** som vi har döpt till: **SetFirstFailureTime**. <br>
+**SetFirstFailureTime** uppdaterar listan **MonitorState** och sätter **FirstFailureTime** till den aktuella tiden med **utsNow()**. <br>
+<img width="969" height="160" alt="image" src="https://github.com/user-attachments/assets/3ddcd854-3076-4096-baeb-4e5ec14d7aa0" /> <br>
+Det sista Logic App gör nu är en till Sharepoint-action, **Create Item** vår heter: **CreateSiteLogsEntry**, den skickar informationen till vår Sharepoint lista **Site logs** och fyller i: **HTTP Status**, **TimeStamp**, **ResponseTimeMS**, **WebsiteStatus** och **Website**.  Efter det är vår Logic App klar för denna körningen, den gör inget mer färrän **Recurrence** körs igen efter ca 15min.
+
+
+
+
+
+
 
 
 
