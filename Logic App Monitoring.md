@@ -5,6 +5,33 @@ Vi har fått i uppgift att välja ett projekt som vi ska göra i grupp. Vi har v
 Vi har gjort en enkel app som läser av sidan Faultnode.se var 15 minut. Faultnode.se har bara ett syfte, det är att man ska kunna kontrolera sidan och få förutsägbara fel, tex lång svarstid, HTTP koder som 500, 503 och att sidan inte är åtkomlig. <br>
 Den information som appen fångar upp från Faultnode.se kommer sedan att visas i en SharePoint Site.
 
+<details>
+<summary>Olika Sharepoint Actions som används i vår Logic App</summary>
+<h3><strong>Compose</strong></h3>
+Compose – används för att hålla eller bearbeta ett värde under en körning, till exempel ett tidsvärde från utcNow() eller en uträkning. I vår Logic App använder vi bland annat Compose för StartTime, EndTime, Response Time och HTTPStatus.<br>
+<img width="470" height="185" alt="image" src="https://github.com/user-attachments/assets/62dd90b7-0121-4e74-8611-cac16eaad2c8" />
+
+<h3><strong>Condition</strong></h3>
+Condition – används för att kontrollera om ett villkor är sant eller falskt. Beroende på resultatet går Logic Appen vidare i antingen True- eller False-grenen. Hos vi använder det exempelvis för att kontrollera HTTP-status och om sidan är DOWN.<Br>
+<img width="479" height="288" alt="image" src="https://github.com/user-attachments/assets/f60b2d89-f540-408e-abb1-393cddfe43e9" />
+
+<h3><strong>Get item</strong></h3>
+Get item – hämtar en specifik post från en SharePoint-lista. Vi använder GetMonitorState för att läsa information som ska finnas kvar mellan olika körningar av Logic Appen.<br>
+Här krävs ett ID för att Get Item ska veta vilken post den ska använda.<br>
+<img width="477" height="334" alt="image" src="https://github.com/user-attachments/assets/4685a845-4275-4ddd-a2ef-55e345e0fa01" />
+
+<h3><strong>Update item</strong></h3>
+Update item – uppdaterar en befintlig post i en SharePoint-lista. Vi använder den bland annat för att sätta FirstFailureTime och uppdatera MonitorState.<br>
+<img width="469" height="625" alt="image" src="https://github.com/user-attachments/assets/bfbc5084-de6b-44e4-9866-fa2d9f7d2f8d" />
+
+
+
+
+
+
+</details>
+
+
 ## Appens uppbyggnad
 Vår app är uppbyggd i tre delar.<br>
 *Del 1* <br>
