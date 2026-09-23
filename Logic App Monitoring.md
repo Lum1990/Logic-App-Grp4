@@ -85,7 +85,7 @@ Andra blocket börjar med ett **Condition** som heter **IfStatusCode500or503** d
 <img width="500" height="380" alt="image" src="https://github.com/user-attachments/assets/a93effca-b5b5-4ba1-a83b-4571b39e9516" /> <br>
 Här måste vi använda **Condition expression** "or" eftersom det är två olika värden vi vill kontrollera.
 
-Om **IfStatusCode500or503** är lika med 500 eller 503 är resultatet **True** och sätter vår variabel **WebsiteStatus** till **DOWN**. Om **IfStatusCode500or503** är **False**, alltså **HTTPStatus** är inte 500 eller 503, går vi vidare till vårt andra condition i detta block. <br>
+Om **HTTPStatus** är lika 500 eller 503 blir resultatet i **IfStatusCode500or503** **True** och variabeln **WebsiteStatus** sätts till **DOWN**. Om **IfStatusCode500or503** är **False**, alltså **HTTPStatus** är inte 500 eller 503, går vi vidare till vårt andra condition i detta block. <br>
 I **IfSlowerThan3000MS** kontrollerar vi om output från **Response Time** är längre än 3000 ms är den det får vi **True** och vi sätter vår variabel **WebsiteStatus** till **SLOW**, är **Response Time** inte längre än 3000MS sätter vi vår variabel **WebsiteStatus** till **UP**. <br>
 Ett av dessa värden kommer vi senare skicka till en SharePoint-lista beroende på vilket resultat vi får. <br>
 
