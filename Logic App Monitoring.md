@@ -78,7 +78,8 @@ Logic App går då vidare till **True** där har vi placerat yttligare ett **Con
 **IsFirstFailureTimeEmpty** kontrolerar om värdet **FirstFailureTime** i våran lista, se bild MonitorState, är tom. I vårt fall är den tom och resultatet blir **True**. Logic app går vidare till **True** och kör en Sharepoint-action **Update Item** som vi har döpt till: **SetFirstFailureTime**. <br>
 **SetFirstFailureTime** uppdaterar listan **MonitorState** och sätter **FirstFailureTime** till den aktuella tiden med **utsNow()**. <br>
 
-<img width="969" height="160" alt="image" src="https://github.com/user-attachments/assets/3ddcd854-3076-4096-baeb-4e5ec14d7aa0" /> <br>
+<img width="963" height="155" alt="image" src="https://github.com/user-attachments/assets/895869d2-29f1-4ab8-bf3f-9f31b9101a0b" />
+
 Det sista Logic App gör nu är en till Sharepoint-action, **Create Item** vår heter: **CreateSiteLogsEntry**, den skickar informationen till vår Sharepoint lista **Site logs** och fyller i: **HTTP Status**, **TimeStamp**, **ResponseTimeMS**, **WebsiteStatus** och **Website**.  Efter det är vår Logic App klar för denna körningen, den gör inget mer färrän **Recurrence** körs igen efter ca 15min. <br>
 
 ### Andra körningen efter att Faultnode.se gått ner
@@ -89,9 +90,17 @@ efter som detta är första körningen efter att Faultnode.se gick ner. Logic Ap
 ### Tredje körninge efter Faultnode.se gått ner
 Efter 15 minuter körs **Recurrence** igen, Logic App går igenom alla **Conditions**. Denna gång vid **Has30MinutesPassed** kommer den vara **True**, vår logic app kör var 15´e minut och detta är tredje körningen alltså har minst 30 minuter gått sedan Faultnode.se gick ner. Vi går vidare till **IsAlertInactive**, den kontrollerar kolumn **AlertActive** i vår Sharepoint list **MonitorState**. Just nu har **AlertActive** **No** is sin kolumn, se tidigare bild. Alltså går vår **Condition** **IsAlertInactive** vidare till **Ture**, här skickar vi ett e-mail till vald e-mail adress med information om att Faultnode.se har varit nere i 30 minuter, vi uppdaterar också vår sharepoint list **MonitorState** så **AlertActive** står på **Yes**, **CreateSiteLogsEntry** körs och appen avslutas.<br> 
 Efter den tredje körningen av vår Logic App kommer **MonitorState** se ut så här, se bild nedanför. **IsAlertInactive** kontrollerar om **AlertActive** står på **Yes** eller **No** vid varje körning, om vi inte haft det hade vi fått ett e-mail utskickat till oss var 15 minut så länge sidan ligger nere. Vi undviker detta genom att sätta **AlertActive** till **Yes**
-så varje gång **IsAlertInactive** körs och sidan inte har kommit online igen går Logic App till **False** och inget e-mail skickas.
+så varje gång **IsAlertInactive** körs och Faultnode.se inte har kommit online igen går Logic App till **False** och inget e-mail skickas.
 
-<img width="976" height="188" alt="image" src="https://github.com/user-attachments/assets/fb104c83-1fce-4541-a0af-bc2d24fb6fe6" />
+<img width="968" height="180" alt="image" src="https://github.com/user-attachments/assets/47d5ce8a-f97f-43bc-9497-823b0a8504f8" />
+
+### Faultnode.se är online igen
+När Faultnode.se väl är online igen och vår Logic App körs igen kommer den att registrerar Faultnode.se som **Up** igen, **WebsiteStatus** är **UP**. **IsWebSiteDown** kollar om **WebsiteStatus** är **DOWN** det är den inte, och Logic App går vidare till **False**. **WasAlertActive** kontrollerar om **AlertActive** står på **Yes** och det gör den, Logic App går vidare till **Ture**, skickar ett e-mail till vald e-mail adress och kör **ResetMonitorState**. <br>
+**ResetMonitorState** nollställer **MonitorState** till, se bild. Nu undviker vi också att skicka ett e-mail var 15´e minut, varje gång Logic App kör och Faultnode.se är online kommer **WasAlertActive** gå till **False** efter som **AlertActive** står på **No**.
+<img width="856" height="160" alt="image" src="https://github.com/user-attachments/assets/b04965e4-020d-40b0-a7e2-ed3ef2582876" />
+
+
+
 
 
 
