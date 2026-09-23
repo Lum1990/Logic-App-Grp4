@@ -6,7 +6,7 @@ Vi har gjort en enkel app som läser av sidan Faultnode.se var 15 minut. Faultno
 Den information som appen fångar upp från Faultnode.se kommer sedan att visas i en SharePoint Site.
 
 <details>
-<summary>Olika SharePoint Actions som används i vår Logic App</summary>
+<summary>Olika Actions som används i vår Logic App</summary>
 <h3><strong>Compose</strong></h3>
 Compose – används för att hålla eller bearbeta ett värde under en körning, till exempel ett tidsvärde från utcNow() eller en uträkning. I vår Logic App använder vi bland annat Compose för StartTime, EndTime, Response Time och HTTPStatus.<br>
 <img width="470" height="185" alt="image" src="https://github.com/user-attachments/assets/62dd90b7-0121-4e74-8611-cac16eaad2c8" />
@@ -95,19 +95,19 @@ noll. Ta vår Compose **StartTime** från första blocket som exempel, där har 
 
 ## Tredje blocket
 Det första vi har i block tre är en **Condition** som heter **IsWebSiteDown** den kontrollerar om **WebSiteStatus** = **DOWN**. **IsWebSiteDown** leder till ytterligare två **Conditions**, **IsFirstFailureTimeEmpty** och **WasAlertActive**, se bild 3. <br>
-Vi säger att vi börjar från ett stadie där Faultnode.se fungerar som det ska, sidan ligger inte nere. **MonitorState** kommer då se ut så här: <br>
+Vi säger att vi börjar från ett läge där Faultnode.se fungerar som det ska, sidan ligger inte nere. **MonitorState** kommer då se ut så här: <br>
 <img width="954" height="191" alt="image" src="https://github.com/user-attachments/assets/d3e375e0-eb8a-4e16-b1ec-6640b99f6d67" /> <br>
 
 
 ### Första körningen efter Faultnode.se gått ner
 Men plötsligt svarar inte Faultnode.se, efter ca 15 min körs **Recurrence** igen och Logic App startar om. Denna gång kommer **WebsiteStatus** att sättas till **DOWN** och **IsWebSiteDown** i tredje blocket kollar: är **WebsiteStatus** = **DOWN**. I detta fall blir det **True**. <br>
 Logic App går då vidare till **True** där har vi placerat ytterligare ett **Condition**: **IsFirstFailureTimeEmpty**.<br> 
-**IsFirstFailureTimeEmpty** kontrollerar om värdet **FirstFailureTime** i vår lista, se bild MonitorState, är tom. I vårt fall är den tom och resultatet blir **True**. Logic app går vidare till **True** och kör en SharePoint-action **Update Item** som vi har döpt till: **SetFirstFailureTime**. <br>
+**IsFirstFailureTimeEmpty** kontrollerar om värdet **FirstFailureTime** i vår lista, se bild MonitorState, är tom. I vårt fall är den tom och resultatet blir **True**. Logic App går vidare till **True** och kör en SharePoint-action **Update Item** som vi har döpt till: **SetFirstFailureTime**. <br>
 **SetFirstFailureTime** uppdaterar listan **MonitorState** och sätter **FirstFailureTime** till den aktuella tiden med **utcNow()**. <br>
 
 <img width="963" height="155" alt="image" src="https://github.com/user-attachments/assets/895869d2-29f1-4ab8-bf3f-9f31b9101a0b" />
 
-Det sista Logic App gör nu är en till SharePoint-action, **Create Item** vår heter: **CreateSiteLogsEntry**, den skickar informationen till vår SharePoint-listaa **Site logs** och fyller i: **HTTP Status**, **TimeStamp**, **ResponseTimeMS**, **WebsiteStatus** och **Website**.  Efter det är vår Logic App klar för denna körningen, den gör inget mer förrän **Recurrence** körs igen efter ca 15 min. <br>
+Det sista Logic App gör nu är en till SharePoint-action, **Create Item** vår heter: **CreateSiteLogsEntry**, den skickar informationen till vår SharePoint-lista **Site logs** och fyller i: **HTTP Status**, **TimeStamp**, **ResponseTimeMS**, **WebsiteStatus** och **Website**.  Efter det är vår Logic App klar för denna körningen, den gör inget mer förrän **Recurrence** körs igen efter ca 15 min. <br>
 
 ### Andra körningen efter att Faultnode.se gått ner
 Låt oss säga att Faultnode.se fortfarande ligger nere. Vår Logic App kommer gå igenom samma sak igen. Den kommer gå igenom start time, HTTP response time, sätta en variabel. Eftersom att Faultnode.se fortfarande ligger nere så kommer den sätta website status till **DOWN**. Vi går vidare och vår **MonitorState** lista är uppdaterad. Förra körningen la till ett värde i **FirstFailureTime**. Och vår variabel **WebsiteStatus** är **DOWN**, **IsWebsiteDown** kollar om **WebsiteStatus** = **DOWN**. Vi går vidare till **True**. Nästa **IsFirstFailureTimeEmpty** det är den inte i vår SharePoint-lista i kolumn **FirstFailureTime** har vi ett värde, Logic App går vidare till **False**.<br>
@@ -115,7 +115,7 @@ Nästa **Condition** vi kommer till är **Has30MinutesPassed** den använder **a
 eftersom detta är första körningen efter att Faultnode.se gick ner. Logic App går till **False** och inget mer händer här. Efter det lägger **CreateSiteLogsEntry** en ny rad i **Site logs** och körningen avslutas.<br>
 
 ### Tredje körningen efter Faultnode.se gått ner
-Efter 15 minuter körs **Recurrence** igen, Logic App går igenom alla **Conditions**. Denna gång vid **Has30MinutesPassed** kommer den vara **True**, vår Logic App kör var 15:e minut och detta är tredje körningen alltså har minst 30 minuter gått sedan Faultnode.se gick ner. Vi går vidare till **IsAlertInactive**, den kontrollerar kolumn **AlertActive** i vår SharePoint-lista **MonitorState**. Just nu har **AlertActive** **No** i sin kolumn, se tidigare bild. Alltså går vår **Condition** **IsAlertInactive** vidare till **True**, här skickar vi ett e-mail till vald e-postadress med information om att Faultnode.se har varit nere i 30 minuter, vi uppdaterar också vår SharePoint-lista **MonitorState** så **AlertActive** står på **Yes**, **CreateSiteLogsEntry** körs och appen avslutas.<br> 
+Efter 15 minuter körs **Recurrence** igen, Logic App går igenom alla **Conditions**. Denna gång vid **Has30MinutesPassed** kommer den vara **True**, vår Logic App kör var 15:e minut och detta är tredje körningen alltså har minst 30 minuter gått sedan Faultnode.se gick ner. Vi går vidare till **IsAlertInactive**, den kontrollerar kolumn **AlertActive** i vår SharePoint-lista **MonitorState**. Just nu har **AlertActive** **No** i sin kolumn, se tidigare bild. Alltså går vår **Condition** **IsAlertInactive** vidare till **True**, här skickar vi ett e-post till vald e-postadress med information om att Faultnode.se har varit nere i 30 minuter, vi uppdaterar också vår SharePoint-lista **MonitorState** så **AlertActive** står på **Yes**, **CreateSiteLogsEntry** körs och appen avslutas.<br> 
 Efter den tredje körningen av vår Logic App kommer **MonitorState** se ut så här, se bild nedanför. **IsAlertInactive** kontrollerar om **AlertActive** står på **Yes** eller **No** vid varje körning, om vi inte haft det hade vi fått ett e-postmeddelande skickat till oss var 15 minut så länge sidan ligger nere. Vi undviker detta genom att sätta **AlertActive** till **Yes**
 så varje gång **IsAlertInactive** körs och Faultnode.se inte har kommit online igen går Logic App till **False** och inget e-mail skickas.
 
@@ -123,7 +123,7 @@ så varje gång **IsAlertInactive** körs och Faultnode.se inte har kommit onlin
 
 ### Faultnode.se är online igen
 När Faultnode.se väl är online igen och vår Logic App körs igen kommer den att registrera Faultnode.se som **Up** igen, **WebsiteStatus** är **UP**. **IsWebSiteDown** kollar om **WebsiteStatus** är **DOWN** det är den inte, och Logic App går vidare till **False**. **WasAlertActive** kontrollerar om **AlertActive** står på **Yes** och det gör den, Logic App går vidare till **True**, skickar ett e-mail till vald e-postadress och kör **ResetMonitorState**. <br>
-**ResetMonitorState** nollställer **MonitorState** till, se bild. Nu undviker vi också att skicka ett e-mail var 15:e minut, varje gång Logic App kör och Faultnode.se är online kommer **WasAlertActive** gå till **False** eftersom **AlertActive** står på **No**.
+**ResetMonitorState** nollställer **MonitorState** till, se bild. Nu undviker vi också att skicka ett e-post var 15:e minut, varje gång Logic App kör och Faultnode.se är online kommer **WasAlertActive** gå till **False** eftersom **AlertActive** står på **No**.
 <img width="856" height="160" alt="image" src="https://github.com/user-attachments/assets/b04965e4-020d-40b0-a7e2-ed3ef2582876" />
 
 
