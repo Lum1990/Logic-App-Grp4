@@ -58,7 +58,7 @@ Andra blocket börjar med ett **Condition** som heter **IfStatusCode500or503** d
 <img width="500" height="380" alt="image" src="https://github.com/user-attachments/assets/a93effca-b5b5-4ba1-a83b-4571b39e9516" /> <br>
 Här måste vi använd **Condition expression** "or" efter som att det är två olika värden vi vill kontrolera.
 
-Om **HTTPStatus** är 500 eller 503 är resultatet **True** och sätter vår variabel **WebsiteStatus** till **DOWN**. Om **HTTPStatus** är **UP** betyder det att vårt resultat är **False** och vi kommer gå vidare till vårt andra condition i detta block. <br>
+Om **HTTPStatus** är 500 eller 503 är resultatet **True** och sätter vår variabel **WebsiteStatus** till **DOWN**. Om **WebsiteStatus** är **UP** betyder det att vårt resultat är **False** och vi kommer gå vidare till vårt andra condition i detta block. <br>
 I **IfSlowerThan3000MS** kontrolerar vi om output från **Response Time** är längre än 3000MS är den det får vi **True** och vi sätter våran variabel **WebsiteStatus** till **SLOW**, är **Response Time** inte längre än 3000MS sätter vi vår variabel **WebsiteStatus** till **UP**. <br>
 Ett av dessa värden kommer vi senare skicka till en SharePoint List beroende på vilket resultat vi får. <br>
 
@@ -71,6 +71,7 @@ Det första vi har i block tre är ett **Condition** denna är döpt **IsWebSite
 Vi säger att vi börjar från ett stadie där Faultnode.se fungerar som det ska, sidan ligger inte nere. **MonitorSate** kommer då se ut så här: <br>
 <img width="954" height="191" alt="image" src="https://github.com/user-attachments/assets/d3e375e0-eb8a-4e16-b1ec-6640b99f6d67" /> <br>
 
+
 ### Första körningen efter Faultnode.se gått ner
 Men plötsligt svarar inte Faultnode.se, efter ca 15 min körs **Recurrence** igen och Logic App startar om. Denna gång kommer **WebsiteStatus** att sättas till **DOWN** och **IsWebSiteDown** i tredje blocket kollar: är **WebsiteStatus** = **DOWN**. I detta fall blir det **True**. <br>
 Logic App går då vidare till **True** där har vi placerat yttligare ett **Contidion**: **IsFirstFailureTimeEmpty**.<br> 
@@ -82,12 +83,13 @@ Det sista Logic App gör nu är en till Sharepoint-action, **Create Item** vår 
 
 ### Andra körningen efter att Faultnode.se gått ner
 Låt oss säga att Faultnode.se fortfarande ligger nere. Vår Logic App kommer gå igenom samma sak igen. Den kommer gå igenom start time, HTTP response time, sätta en variabel. Eftersom att Faultnode.se fortfarande ligger nere så kommer den sätta website status till **DOWN**. Vi går vidare och vår **MonitorState** lista är uppdaterad. Förra körningen la till ett värde i **FirstFailureTime**. Och vår variabel **WebsiteStatus** är **DOWN**, **IsWebsiteDown** kollar om **WebsiteStatus** = **DOWN**. Vi går vidare till **True**. Nästa **IsFirstFailureTimeEmpty** det är den inte i vår Sharepoint list i kolumn **FirstFailureTime** har vi ett värde, Logic App går vidare till **False**.<br>
-Nästa **Condition** vi kommer till är **Has30MinutesPassed** den använder **addMinutes()** den tar helt enkelt värdet i **FirstFailureTime**, lägger på 30 minuter, sedand jämförs det värdet med ett nytt **utcNow()**. Om **FirstFailureTime** + 30 minuter >= **utcNow()** kommer Logic App gå vidare till **True**, i vårt fall är det **False**
+Nästa **Condition** vi kommer till är **Has30MinutesPassed** den använder **addMinutes()** den tar helt enkelt värdet i **FirstFailureTime**, lägger på 30 minuter, sedand jämförs det värdet med ett nytt **utcNow()**. Om **utcNow()**, är större eller lika med **FirstFailureTime** + 30 minuter kommer Logic App gå vidare till **True**, i vårt fall är det **False**
 efter som detta är första körningen efter att Faultnode.se gick ner. Logic App går till **False** och inget mer händer här. Efter det lägger **CreateSiteLogsEntry** en ny rad i **Site logs** och körningen avslutas.<br>
 
 ### Tredje körninge efter Faultnode.se gått ner
-Efter 15 minuter körs **Recurrence** igen, Logic App går igenom alla **Conditions**. Denna gång vid **Has30MinutesPassed** kommer den vara **True**, vår logic app kör var 15´e minut och detta är tredje körningen alltså har minst 30 minuter gått sedan Faultnode.se gick ner. Vi går vidare till **IsAlertInactive**, den kontrollerar kolumn **AlertActive** i vår Sharepoint list **MonitorState**. Just nu har **AlertActive** **NO** is sin kolumn, se tidigare bild. Alltså går vår **Condition** **IsAlertInactive** vidare till **Ture**, här skickar vi ett e-mail till vald e-mail adress med information om att Faultnode.se har varit nere i 30 minuter, vi uppdaterar också vår sharepoint list **MonitorState** så **AlertActive** står på **YES**, **CreateSiteLogsEntry** körs och appen avslutas.<br> 
-Efter den tredje körningen av vår Logic App kommer **MonitorState** se ut så här, se bild nedanför. 
+Efter 15 minuter körs **Recurrence** igen, Logic App går igenom alla **Conditions**. Denna gång vid **Has30MinutesPassed** kommer den vara **True**, vår logic app kör var 15´e minut och detta är tredje körningen alltså har minst 30 minuter gått sedan Faultnode.se gick ner. Vi går vidare till **IsAlertInactive**, den kontrollerar kolumn **AlertActive** i vår Sharepoint list **MonitorState**. Just nu har **AlertActive** **No** is sin kolumn, se tidigare bild. Alltså går vår **Condition** **IsAlertInactive** vidare till **Ture**, här skickar vi ett e-mail till vald e-mail adress med information om att Faultnode.se har varit nere i 30 minuter, vi uppdaterar också vår sharepoint list **MonitorState** så **AlertActive** står på **Yes**, **CreateSiteLogsEntry** körs och appen avslutas.<br> 
+Efter den tredje körningen av vår Logic App kommer **MonitorState** se ut så här, se bild nedanför. **IsAlertInactive** kontrollerar om **AlertActive** står på **Yes** eller **No** vid varje körning, om vi inte haft det hade vi fått ett e-mail utskickat till oss var 15 minut så länge sidan ligger nere. Vi undviker detta genom att sätta **AlertActive** till **Yes**
+så varje gång **IsAlertInactive** körs och sidan inte har kommit online igen går Logic App till **False** och inget e-mail skickas.
 
 <img width="976" height="188" alt="image" src="https://github.com/user-attachments/assets/fb104c83-1fce-4541-a0af-bc2d24fb6fe6" />
 
